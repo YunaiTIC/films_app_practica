@@ -8,7 +8,7 @@ class IPersistencia_pelicula(ABC):
         pass
 
     @abstractclassmethod
-    def totes_pag(self,id: int) -> List[Pelicula]:
+    def totes_pag(self, id: int) -> List[Pelicula]:
         pass
     
     @abstractclassmethod

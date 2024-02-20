@@ -1,3 +1,4 @@
+
 #!/bin/usr/python3
 
 from ipersistencia_pelicula import IPersistencia_pelicula
@@ -42,13 +43,23 @@ class Persistencia_pelicula_mysql(IPersistencia_pelicula):
         cursor.reset()
         resultat = []
         for registre in registres:
+            
             pelicula = Pelicula(registre[1],registre[2],registre[3],registre[4],self,registre[0])
             resultat.append(pelicula)
         return resultat
     
-    def totes_pag(self, id=None) -> List[Pelicula]:
-        pass
-        #falta codi
+    def totes_pag(self, id: int) -> List[Pelicula]:
+        cursor = self._conn.cursor(buffered=True)
+        query = "SELECT id, titulo, anyo, puntuacion, votos FROM PELICULA WHERE id > %s ORDER BY id LIMIT 10;"
+        cursor.execute(query, (id,))
+        registres = cursor.fetchall()
+        cursor.reset()
+        resultat = []
+        for registre in registres:
+            pelicula = Pelicula(registre[1], registre[2], registre[3], registre[4], self, registre[0])
+            resultat.append(pelicula)
+        return resultat
+
     
     def desa(self,pelicula:Pelicula) -> Pelicula:
         pass

@@ -3,6 +3,6 @@
 base de dades:
     motor: mysql
     host: localhost
-    user: 
-    password: 
-    database: pelis
+    user: dam_app
+    password: 1234
+    database: dam_m06

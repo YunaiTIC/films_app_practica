@@ -35,7 +35,10 @@ class Llistapelis():
             }   
         return json.dumps(self_dict)
 
-    def llegeix_de_disc(self,id:int):
-        self._pelicules = #falta codi
-        self._ult_id = #falta codi
+    
+    def llegeix_de_disc(self, id:int):
+        self._pelicules = self.persistencia_pelicula.totes_pag(id)
+        self._ult_id = id
+
+        
 
