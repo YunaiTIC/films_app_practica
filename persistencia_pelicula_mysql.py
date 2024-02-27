@@ -1,11 +1,12 @@
+import mysql.connector
 
-#!/bin/usr/python3
+from typing import List
 
+import MySQLdb
+import mysql
 from ipersistencia_pelicula import IPersistencia_pelicula
 from pelicula import Pelicula
-from typing  import List
-import mysql.connector
-import logging
+
 
 class Persistencia_pelicula_mysql(IPersistencia_pelicula):
     def __init__(self, credencials) -> None:
@@ -24,7 +25,7 @@ class Persistencia_pelicula_mysql(IPersistencia_pelicula):
             cursor = self._conn.cursor(buffered=True)
             cursor.execute("SELECT * FROM PELICULA;")
             cursor.reset()
-        except mysql.connector.errors.ProgrammingError:
+        except MySQLdb.connector.errors.ProgrammingError:
             return False
         return True
     
@@ -43,15 +44,17 @@ class Persistencia_pelicula_mysql(IPersistencia_pelicula):
         cursor.reset()
         resultat = []
         for registre in registres:
-            
             pelicula = Pelicula(registre[1],registre[2],registre[3],registre[4],self,registre[0])
             resultat.append(pelicula)
         return resultat
     
-    def totes_pag(self, id: int) -> List[Pelicula]:
+    def totes_pag(self, id=None) -> List[Pelicula]:
         cursor = self._conn.cursor(buffered=True)
-        query = "SELECT id, titulo, anyo, puntuacion, votos FROM PELICULA WHERE id > %s ORDER BY id LIMIT 10;"
-        cursor.execute(query, (id,))
+        query = "SELECT id, titulo, anyo, puntuacion, votos FROM PELICULA"
+        if id is not None:
+            query += f" WHERE id >= {id}"
+        query += " LIMIT 10" 
+        cursor.execute(query)
         registres = cursor.fetchall()
         cursor.reset()
         resultat = []
@@ -63,12 +66,9 @@ class Persistencia_pelicula_mysql(IPersistencia_pelicula):
     
     def desa(self,pelicula:Pelicula) -> Pelicula:
         pass
-        #falta codi
     
     def llegeix(self, any: int) -> Pelicula:
         pass
-        #falta codi
     
     def canvia(self,pelicula:Pelicula) -> Pelicula:
         pass
-        #falta codi
