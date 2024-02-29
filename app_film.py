@@ -68,6 +68,9 @@ def mostra_seguents(llistapelicula):
 def mostra_menu():
     print("0.- Surt de l'aplicació.")
     print("1.- Mostra les primeres 10 pel·lícules")
+    print("3.- Inserir una nova pel·lícula.")
+    print("4.- Modificar pelicula una existent ")
+    print("5.- Seleccionar algunes per any.")
 
 
 def mostra_menu_next10():
@@ -77,9 +80,13 @@ def mostra_menu_next10():
 
 def procesa_opcio(context):
     return {
-        "0": lambda ctx : mostra_lent("Fins la propera"),
-        "1": lambda ctx : mostra_llista(ctx['llistapelis'])
-    }.get(context["opcio"], lambda ctx : mostra_lent("opcio incorrecta!!!"))(context)
+        "0": lambda ctx: mostra_lent("Fins la propera"),
+        "1": lambda ctx: mostra_llista(ctx['llistapelis']),
+        "3": lambda ctx: insereix_pelicula("Inserir peli"),
+        "4": lambda ctx: modifica_pelicula(ctx['modificar_peli']),
+        "5": lambda ctx: selecciona_perany(ctx['selecciona_perany'])
+    }.get(context["opcio"], lambda ctx: mostra_lent("opcio incorrecta!!!"))(context)
+
 
 def database_read(id_inicio: int = None):
     logging.basicConfig(filename='pelicules.log', encoding='utf-8', level=logging.DEBUG)
@@ -115,8 +122,84 @@ def bucle_principal(context):
                     films = database_read(id_inicio)
                     context["llistapelis"].pelicules.extend(films.pelicules)
 
-        procesa_opcio(context)
 
+        elif context["opcio"] == '3':
+            print("Has seleccionat inserir una nova pel·lícula. Insereix les dades:")
+            ttl = input("Titol: ")
+            any = int(input("Any "))
+            puntuacio = float(input("Any: "))
+            votos = int(input("Vots: "))
+
+            # Comprovem que el titol no existeixi
+            query_select = "SELECT * FROM PELICULA WHERE TITULO = %s"
+            cursor.execute(query_select, (ttl,))
+            existeix = cursor.fetchone()
+
+            if existeix:
+                print("Aquesta pelicula ja existeix")
+            else:
+                query_insert = "INSERT INTO PELICULA (TITULO, ANYO, PUNTUACION, VOTOS) VALUES (%s, %s, %s, %s)"
+                cursor.execute(query_insert, (ttl, any, puntuacio, votos))
+                conn.commit() 
+                print("Pelicula inserida")
+
+        elif context["opcio"] == '4':
+            print("Has seleccionat modificar els detalls d'una pel·lícula existent.")
+            ttl = input("Titol exacte: ")
+            np = float(input("Nova puntuacio "))
+            nv = int(input("Nous vots "))
+
+            query = "UPDATE PELICULA SET PUNTUACION = %s, VOTOS = %s WHERE TITULO = %s"
+            cursor.execute(query, (np, nv, ttl))
+            conn.commit() 
+
+          elif context["opcio"] == '5':
+            print("Has seleccionat consultar la base de dades de pel·lícules.")
+            opc = int(input("Vols consultar mitjançant un rang d'anys (1), per puntuació(2), o mitjançant els actors que hi participen (3)?  "))
+            #Mediante ifs, barajamos las diferentes opciones
+            if opc == 1:
+                any1 = int(input("Any mínim: "))
+                any2 = int(input("Any màxim: "))
+
+                query = "SELECT * FROM PELICULA WHERE ANYO > %s AND ANYO < %s"
+                cursor.execute(query, (any1, any2))
+                rows = cursor.fetchall()
+
+                for row in rows:
+                    print(row)
+
+            elif opc == 2:
+                punt = float(input("Indica el valor "))
+                z = input("Vols veure les pelicules amb més (a) o menys(b) valor que el que has introduit?   ")
+                if z == "a":
+                    
+                    query = "SELECT * FROM PELICULA WHERE PUNTUACION > %s"
+                    cursor.execute(query, (punt,))
+                elif z == "b":
+                
+                    query = "SELECT * FROM PELICULA WHERE PUNTUACION < %s"
+                    cursor.execute(query, (punt,))
+
+                rows = cursor.fetchall()
+
+                for row in rows:
+                    print(row)
+
+            elif opc == 3:
+                ttl = input("Titol: ")
+            
+                query = """
+                    SELECT A.NOMBRE AS NombreActor
+                    FROM ACTOR A
+                    JOIN REPARTO R ON A.ID = R.ACTOR_ID
+                    JOIN PELICULA P ON R.PELICULA_ID = P.ID
+                    WHERE P.TITULO = %s
+                """
+                cursor.execute(query, (ttl,))
+                rows = cursor.fetchall()
+
+                for row in rows:
+                    print(row)
 
 
 def main():
